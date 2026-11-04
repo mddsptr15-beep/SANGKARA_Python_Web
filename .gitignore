@@ -1,0 +1,13 @@
+# Mengabaikan virtual environment
+venv/
+ENV/
+env/
+
+# Mengabaikan cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Mengabaikan file installer/wheel yang besar
+*.whl

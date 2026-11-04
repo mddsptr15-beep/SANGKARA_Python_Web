@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SANGKARA — Caregiver Assistant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
+
+:root{
+  --green:#267d6c; --green-dark:#185e53; --green-deep:#123f3a;
+  --green-soft:#eaf4f0; --mint:#dceee7; --ink:#183a3b;
+  --muted:#627777; --muted-2:#819392; --line:#e2ece8;
+  --canvas:#f7faf8; --white:#fff; --shadow:0 8px 24px rgba(28,73,62,.055);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:"DM Sans",Arial,sans-serif;color:var(--ink);
+  background:var(--canvas);overflow:hidden;
+}
+button{font:inherit;cursor:pointer}
+.app{height:100dvh;min-height:600px;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{
+  background:#fff;border-right:1px solid var(--line);padding:25px 17px 18px;
+  display:flex;flex-direction:column;min-height:0;
+}
+.brand{display:flex;align-items:center;gap:11px;padding:2px 8px 27px}
+.brand-logo{
+  width:43px;height:43px;border:2.5px solid var(--green);border-radius:15px 15px 15px 5px;
+  display:grid;place-items:center;color:var(--green);font-size:24px;font-weight:800;
+  transform:rotate(-3deg)
+}
+.brand-name{font:800 19px Manrope,sans-serif;letter-spacing:.02em}
+.brand-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.nav-label{font-size:9px;font-weight:800;letter-spacing:.15em;color:#9aa9a5;padding:0 10px 10px}
+.nav{display:grid;gap:4px}
+.nav-btn{
+  border:0;background:transparent;color:#385455;border-radius:11px;
+  display:flex;align-items:center;gap:12px;text-align:left;padding:10px 11px;
+  min-height:42px;font-size:12px;font-weight:600;transition:.18s ease;
+}
+.nav-btn:hover{background:#f3f8f5}
+.nav-btn.active{background:var(--green);color:white;box-shadow:0 5px 12px rgba(38,125,108,.16)}
+.nav-icon{width:19px;height:19px;display:grid;place-items:center;flex:none}
+.nav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sidebar-bottom{margin-top:auto}
+.safe-card{
+  border:1px solid #e0eee8;border-radius:13px;background:linear-gradient(135deg,#eff7f3,#e4f1eb);
+  padding:13px 12px;text-align:center
+}
+.safe-icon{width:29px;height:29px;margin:0 auto 6px;border-radius:10px;background:#d3eae0;color:var(--green);display:grid;place-items:center}
+.safe-card strong{font-size:11px;display:block}
+.safe-card p{font-size:10px;color:var(--muted);margin:3px 0 0;line-height:1.4}
+.side-meta{font-size:9px;color:#91a19c;line-height:1.6;padding:13px 5px 0}
+.main{min-width:0;display:flex;flex-direction:column;min-height:0}
+.topbar{
+  height:64px;flex:none;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:0 30px;
+}
+.topbar-title{font-size:12px;font-weight:600;color:#4c6665;border-left:2px solid #8bb7a8;padding-left:13px}
+.top-actions{display:flex;align-items:center;gap:16px}
+.icon-btn{border:0;background:transparent;color:#526c6b;padding:6px;border-radius:9px}
+.icon-btn:hover{background:var(--green-soft)}
+.user{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600}
+.avatar{width:30px;height:30px;border-radius:50%;background:#e8eeeb;color:#78918a;display:grid;place-items:center}
+.content{
+  flex:1;min-height:0;overflow:auto;padding:22px 28px 24px;
+  scrollbar-width:thin;scrollbar-color:#d4e3dc transparent
+}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px}
+.eyebrow{font-size:9px;letter-spacing:.15em;font-weight:800;color:var(--green);margin-bottom:6px}
+h1{font:800 clamp(21px,2vw,27px) Manrope,sans-serif;letter-spacing:-.04em;margin:0;color:#173c3d}
+.page-head p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.date-pill{background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 11px;color:#637a76;font-size:10px;font-weight:600}
+.hero{
+  position:relative;overflow:hidden;min-height:190px;height:clamp(180px,22vh,220px);
+  border:1px solid #dcebe4;border-radius:18px;
+  background:linear-gradient(105deg,#eaf4ef 0%,#f0f7f3 56%,#dceee6 100%);
+  display:flex;align-items:center;padding:25px 30px;margin-bottom:17px;
+}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.hero:before{width:290px;height:290px;background:rgba(255,255,255,.34);right:16%;top:-180px}
+.hero:after{width:230px;height:230px;background:rgba(166,211,190,.2);right:-55px;bottom:-160px}
+.hero-copy{position:relative;z-index:2;max-width:55%}
+.hero h2{font:800 clamp(22px,2.3vw,31px) Manrope,sans-serif;letter-spacing:-.04em;margin:0;color:#173b3d}
+.hero h2 span{color:var(--green)}
+.hero p{font-size:13px;line-height:1.5;color:#385c59;max-width:430px;margin:8px 0 16px}
+.primary-btn{border:0;border-radius:99px;background:var(--green-dark);color:white;padding:10px 17px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:8px;box-shadow:0 5px 12px rgba(24,94,83,.15)}
+.primary-btn:hover{background:#104e45;transform:translateY(-1px)}
+.hero-art{position:absolute;right:4%;bottom:-3px;width:38%;height:94%;z-index:1}
+.hero-art svg{width:100%;height:100%;overflow:visible}
+.quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin-bottom:17px}
+.quick-card{
+  border:1px solid var(--line);border-radius:15px;background:#fff;padding:14px 14px 12px;
+  min-height:132px;display:flex;flex-direction:column;position:relative;text-align:left;
+  transition:.18s ease;box-shadow:0 3px 12px rgba(30,73,61,.025)
+}
+.quick-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#c9ded4}
+.quick-top{display:flex;align-items:center;justify-content:space-between}
+.quick-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center}
+.quick-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.quick-card strong{font-size:12px;margin-top:10px;color:#234747}
+.quick-card p{font-size:10px;line-height:1.4;color:var(--muted);margin:4px 0 0;max-width:90%}
+.quick-arrow{position:absolute;right:13px;bottom:12px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:17px}
+.red{background:#fff5f4;border-color:#f3e3e1}.red .quick-icon{background:#ffe1de;color:#d74f49}.red .quick-arrow{background:#ffe4e0;color:#cb514b}
+.green{background:#f7fbf9}.green .quick-icon{background:#dff0e8;color:#26806c}.green .quick-arrow{background:#e3f2eb;color:#287c68}
+.orange{background:#fffaf4;border-color:#f2e9dc}.orange .quick-icon{background:#fbe8cd;color:#b87a20}.orange .quick-arrow{background:#fbeedc;color:#a56c1c}
+.purple{background:#fbf9ff;border-color:#ece5f5}.purple .quick-icon{background:#eee5fa;color:#7850a5}.purple .quick-arrow{background:#f0e8fa;color:#7955a1}
+.blue{background:#f6faff;border-color:#e1ebf5}.blue .quick-icon{background:#dfeefa;color:#287da9}.blue .quick-arrow{background:#e1f0fa;color:#287da9}
+.bottom-grid{display:grid;grid-template-columns:1.02fr 1.08fr;gap:15px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:15px;min-height:185px;overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #edf2ef}
+.panel-title{display:flex;align-items:center;gap:9px;font:700 14px Manrope,sans-serif;color:#234344}
+.panel-title svg{width:17px;height:17px;color:var(--green);stroke:currentColor;fill:none;stroke-width:2}
+.period{border:0;border-radius:99px;background:#eaf4ef;color:#367668;padding:6px 10px;font-size:9px;font-weight:700}
+.vitals{padding:14px 16px 10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.vital{display:flex;align-items:center;gap:7px;min-width:0}
+.vital-ico{font-size:16px;color:#dc756d}
+.vital strong{display:block;font:700 14px Manrope,sans-serif;color:#294849;white-space:nowrap}
+.vital small{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+.status{border-left:1px solid #e4eee9;text-align:center;color:#24805f;padding:0 5px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.status span{font-size:20px}
+.status strong{font-size:10px}
+.chart{height:62px;padding:0 15px 8px}
+.chart svg{width:100%;height:100%}
+.info-panel{
+  background:linear-gradient(115deg,#f0f7f3 0%,#f7faf8 70%,#e3f0e9 100%);
+  display:flex;align-items:center;justify-content:space-between;padding:20px 22px;position:relative
+}
+.info-copy{max-width:70%;position:relative;z-index:1}
+.info-title{display:flex;align-items:center;gap:9px;font:700 14px Manrope,sans-serif}
+.info-title .i{width:22px;height:22px;border-radius:50%;background:#269a9c;color:#fff;display:grid;place-items:center;font-size:13px}
+.info-copy p{font-size:12px;line-height:1.6;color:#45615e;margin:11px 0 14px}
+.outline-btn{border:1px solid #8ab8a8;background:rgba(255,255,255,.45);color:#315e55;border-radius:99px;padding:8px 13px;font-size:10px;font-weight:700}
+.heart-art{font-size:75px;color:#73b59b;opacity:.5;line-height:1}
+.subpage{display:none}
+.subpage.active{display:block}
+.feature-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.feature-panel h2{font:800 20px Manrope,sans-serif;margin:0 0 5px}
+.feature-panel>p{font-size:12px;color:var(--muted);margin:0 0 18px}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.field label{display:block;font-size:10px;font-weight:700;color:#526b67;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;border:1px solid #dce8e2;border-radius:9px;padding:10px;background:#fbfdfc;color:#294746;font:12px "DM Sans",sans-serif;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#72ad99;box-shadow:0 0 0 3px #e7f3ed}
+.form-actions{margin-top:15px;display:flex;gap:8px}
+.result{margin-top:16px;padding:13px 15px;border-radius:11px;background:#eff7f2;border:1px solid #dcece2;font-size:12px;color:#386356;display:none}
+.result.show{display:block}
+.mobile-nav-toggle{display:none}
+@media(max-width:1150px){
+ .app{grid-template-columns:220px minmax(0,1fr)}
+ .content{padding:19px 20px}
+ .quick-grid{gap:9px}.quick-card{padding:12px;min-height:125px}
+ .hero-art{right:1%;width:37%}
+}
+@media(max-width:900px){
+ body{overflow:auto}
+ .app{height:auto;min-height:100dvh;display:block}
+ .sidebar{position:sticky;top:0;z-index:20;height:auto;padding:10px 13px;border-right:0;border-bottom:1px solid var(--line)}
+ .brand{padding:0 2px 9px}.brand-logo{width:34px;height:34px;font-size:19px}.brand-name{font-size:16px}
+ .nav-label,.sidebar-bottom{display:none}
+ .nav{display:flex;overflow-x:auto;gap:5px;padding-bottom:2px}
+ .nav-btn{flex:none;min-height:37px;padding:8px 11px;font-size:10px;white-space:nowrap}
+ .nav-icon{width:15px;height:15px}.nav-icon svg{width:15px;height:15px}
+ .topbar{height:52px;padding:0 16px}
+ .content{overflow:visible;padding:17px 14px 25px}
+ .hero{height:185px}.quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bottom-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+ .topbar-title{font-size:10px}.top-actions{gap:7px}.user span:last-child{display:none}
+ .page-head{align-items:center}.date-pill{font-size:9px}
+ .hero{height:auto;min-height:190px;padding:22px 18px}
+ .hero-copy{max-width:75%}.hero h2{font-size:22px}.hero p{font-size:11px;max-width:250px}
+ .hero-art{width:40%;right:-5%;opacity:.75}
+ .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .quick-card{min-height:124px}
+ .quick-card:last-child{grid-column:span 2}
+ .bottom-grid{gap:10px}.panel{min-height:170px}
+ .vitals{grid-template-columns:repeat(2,1fr);row-gap:13px}
+ .status{grid-column:span 2;border-left:0;border-top:1px solid var(--line);padding-top:10px;flex-direction:row;align-items:center}
+ .form-grid{grid-template-columns:1fr}
+ .info-copy{max-width:82%}.heart-art{font-size:48px}
+}
+@media(max-height:790px) and (min-width:901px){
+ .sidebar{padding-top:17px;padding-bottom:12px}
+ .brand{padding-bottom:17px}
+ .nav-btn{min-height:37px;padding-top:7px;padding-bottom:7px}
+ .content{padding-top:15px;padding-bottom:15px}
+ .hero{height:clamp(155px,20vh,185px);min-height:155px;margin-bottom:12px}
+ .quick-grid{margin-bottom:12px}
+ .quick-card{min-height:112px;padding:10px 12px}
+ .quick-icon{width:35px;height:35px}
+ .panel{min-height:160px}
+ .vitals{padding-top:10px;padding-bottom:7px}
+}
+
+/* ===== Refinement pass: clearer hierarchy, contrast, and compact desktop fit ===== */
+:root{
+  --ink:#173536;
+  --muted:#526b68;
+  --muted-2:#718681;
+  --line:#dce8e2;
+  --canvas:#f5f8f6;
+  --green:#287b69;
+  --green-dark:#1d6658;
+}
+body{color:var(--ink);background:var(--canvas)}
+.sidebar{padding-left:16px;padding-right:16px}
+.brand-name{color:#173b3b;letter-spacing:.015em}
+.brand-sub,.side-meta{color:#647b75}
+.nav-label{color:#718780}
+.nav-btn{color:#365451;font-weight:600}
+.nav-btn.active{background:#246f60;box-shadow:0 4px 10px rgba(28,94,79,.14)}
+.topbar{padding-left:28px;padding-right:28px}
+.topbar-title{color:#385653;border-left-color:#6fa58f}
+.content{padding-left:27px;padding-right:27px}
+.eyebrow{color:#267460}
+h1{color:#183b3b}
+.page-head p{color:#526b68}
+.date-pill{color:#46635d;background:#fff}
+.hero{
+  border-color:#d5e6dc;
+  background:linear-gradient(105deg,#e8f2ed 0%,#eff6f2 58%,#dcece3 100%);
+}
+.hero h2{color:#183b3b}
+.hero p{color:#3e5e58}
+.primary-btn{background:#216b5c}
+.primary-btn:hover{background:#18584c}
+.quick-card{box-shadow:0 2px 8px rgba(27,67,57,.035)}
+.quick-card strong{color:#234342}
+.quick-card p{color:#526b68}
+.panel{border-color:#dce8e2;box-shadow:0 2px 9px rgba(27,67,57,.025)}
+.panel-title{color:#244442}
+.period{background:#e8f2ed;color:#286b5b}
+.vital strong{color:#244442}
+.vital small{color:#526b68}
+.info-panel{background:linear-gradient(115deg,#edf5f0 0%,#f6f9f7 70%,#e3efe8 100%)}
+.info-copy p{color:#405e58}
+.outline-btn{border-color:#8bb5a4;color:#285d51;background:#fff}
+.feature-panel{border-color:#dce8e2}
+.feature-panel>p{color:#526b68}
+.field label{color:#405e59}
+.field input,.field select,.field textarea{color:#244442;background:#fcfefd}
+.safe-card p{color:#526b68}
+.safe-card strong{color:#234541}
+.result{color:#315f50}
+@media (min-width:901px) and (max-height:850px){
+  .sidebar{padding-top:13px;padding-bottom:10px}
+  .brand{padding-bottom:13px}
+  .brand-logo{width:38px;height:38px;border-radius:13px 13px 13px 5px}
+  .brand-name{font-size:17px}
+  .nav-btn{min-height:34px;padding-top:6px;padding-bottom:6px;font-size:11px}
+  .nav-icon svg{width:16px;height:16px}
+  .safe-card{padding:9px 10px}
+  .safe-icon{width:25px;height:25px;margin-bottom:4px}
+  .side-meta{padding-top:9px}
+  .topbar{height:56px}
+  .content{padding-top:12px;padding-bottom:12px}
+  .page-head{margin-bottom:11px}
+  .eyebrow{margin-bottom:4px}
+  .page-head p{margin-top:3px}
+  .hero{height:clamp(145px,19vh,170px);min-height:145px;margin-bottom:11px;padding-top:18px;padding-bottom:18px}
+  .hero p{margin-top:6px;margin-bottom:11px}
+  .quick-grid{gap:10px;margin-bottom:11px}
+  .quick-card{min-height:104px;padding:9px 11px}
+  .quick-icon{width:33px;height:33px}
+  .quick-card strong{margin-top:7px;font-size:11px}
+  .quick-card p{font-size:9px;margin-top:3px}
+  .quick-arrow{width:20px;height:20px;right:10px;bottom:9px}
+  .bottom-grid{gap:11px}
+  .panel{min-height:145px}
+  .panel-head{padding:10px 13px}
+  .vitals{padding:9px 13px 5px}
+  .chart{height:52px}
+  .info-panel{padding:15px 18px}
+  .info-copy p{margin:8px 0 10px;font-size:11px}
+}
+@media (min-width:901px) and (min-height:851px){
+  .hero{height:clamp(180px,21vh,215px)}
+}
+@media(max-width:900px){
+  .content{padding-left:15px;padding-right:15px}
+  .nav-btn.active{box-shadow:none}
+}
+@media(max-width:600px){
+  .hero-copy{max-width:78%}
+  .hero-art{opacity:.58}
+  .quick-card p{max-width:94%}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">S</div>
+      <div><div class="brand-name">SANGKARA</div><div class="brand-sub">Caregiver Assistant</div></div>
+    </div>
+    <div class="nav-label">MENU UTAMA</div>
+    <nav class="nav" aria-label="Navigasi utama">
+      <button class="nav-btn active" data-page="home">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-7h6v7"/></svg></span>Beranda
+      </button>
+      <button class="nav-btn" data-page="darurat">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3v2M5.6 5.6 7 7M3 12h2M19 12h2M17 7l1.4-1.4"/><path d="M5 17a7 7 0 0 1 14 0v3H5zM3 20h18"/></svg></span>Darurat
+      </button>
+      <button class="nav-btn" data-page="vital">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2 12h4l3-7 5 14 3-7h5"/></svg></span>Tren Vital
+      </button>
+      <button class="nav-btn" data-page="obat">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m8 16 8-8a4.2 4.2 0 0 1 6 6l-8 8a4.2 4.2 0 0 1-6-6Z"/><path d="m10 14 6 6"/></svg></span>Jadwal Obat
+      </button>
+      <button class="nav-btn" data-page="tindakan">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4V2h6v2M8 10h8M8 14h8M8 18h5"/></svg></span>Tindakan
+      </button>
+      <button class="nav-btn" data-page="pedoman">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 5.5A3.5 3.5 0 0 1 6.5 2H12v19H6.5A3.5 3.5 0 0 0 3 24zM21 5.5A3.5 3.5 0 0 0 17.5 2H12v19h5.5A3.5 3.5 0 0 1 21 24z"/></svg></span>Tanya Pedoman
+      </button>
+      <button class="nav-btn" data-page="alur">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-3h14v3"/></svg></span>Alur Lengkap
+      </button>
+      <button class="nav-btn" data-page="ringkasan">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M8 11h8M8 15h8M8 19h5"/></svg></span>Ringkasan Agen
+      </button>
+      <button class="nav-btn" data-page="analitik">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg></span>Analitik
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="safe-card">
+        <div class="safe-icon">✓</div>
+        <strong>Sistem Aman</strong>
+        <p>Untuk membantu keluarga merawat lansia</p>
+      </div>
+      <div class="side-meta">SANGKARA v1.0<br>Smart Care, Better Life</div>
+    </div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="topbar-title">Pendamping Cerdas untuk Perawatan Lansia</div>
+      <div class="top-actions">
+        <button class="icon-btn" aria-label="Mode tampilan" title="Mode tampilan">◐</button>
+        <div class="user"><div class="avatar">●</div><span>Pengguna</span><span>⌄</span></div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="subpage active" id="page-home">
+        <div class="page-head">
+          <div><div class="eyebrow">RUANG PERAWATAN KELUARGA</div><h1>Beranda</h1><p>Kelola informasi dan aktivitas perawatan dalam satu tempat.</p></div>
+          <div class="date-pill" id="today">Hari ini</div>
+        </div>
+        <section class="hero">
+          <div class="hero-copy">
+            <h2>Selamat Datang di <span>SANGKARA</span></h2>
+            <p>Kelola informasi dan aktivitas perawatan lansia dengan lebih mudah dan terarah.</p>
+            <button class="primary-btn" data-go="darurat">▶ &nbsp; Mulai Gunakan</button>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <svg viewBox="0 0 430 230" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 210 Q70 130 150 185 T300 165 T430 180V230H0Z" fill="#c5e2d4" opacity=".65"/>
+              <path d="M28 220Q5 175 32 145M30 190Q-2 175 2 151M30 178Q65 150 61 126M365 220Q395 174 382 135M382 183Q415 170 419 144" stroke="#6da98d" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path d="M25 220Q15 186 3 177M380 220Q402 183 423 179" stroke="#6da98d" stroke-width="3" fill="none"/>
+              <!-- caregiver -->
+              <path d="M115 230Q120 170 152 147Q180 127 213 151Q238 173 247 230Z" fill="#318c78"/>
+              <path d="M155 145Q141 105 155 68Q172 26 216 35Q252 42 250 91Q250 126 220 151Z" fill="#4a3029"/>
+              <ellipse cx="200" cy="91" rx="39" ry="48" fill="#f2b995"/>
+              <path d="M160 88Q152 36 198 28Q242 28 250 74Q224 57 207 62Q184 78 160 88Z" fill="#4a3029"/>
+              <path d="M179 96q7 6 13 0M211 96q7 6 13 0" stroke="#69463b" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M190 116q11 9 22 0" stroke="#b96e60" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M170 145Q185 161 210 150L224 230H125Q130 175 170 145Z" fill="#2d8b76"/>
+              <path d="M224 161Q265 171 280 206" stroke="#f2b995" stroke-width="17" fill="none" stroke-linecap="round"/>
+              <!-- elderly -->
+              <path d="M250 230Q251 178 282 157Q315 137 348 164Q373 185 377 230Z" fill="#e4cbb3"/>
+              <ellipse cx="321" cy="108" rx="42" ry="48" fill="#f3d2b8"/>
+              <path d="M279 104Q273 57 315 50Q357 47 365 91Q345 72 325 76Q304 83 279 104Z" fill="#c9c7c6"/>
+              <path d="M286 94Q270 111 283 137M358 91Q373 110 357 137" stroke="#c9c7c6" stroke-width="8" fill="none" stroke-linecap="round"/>
+              <circle cx="306" cy="108" r="10" fill="none" stroke="#64716d" stroke-width="3"/><circle cx="338" cy="108" r="10" fill="none" stroke="#64716d" stroke-width="3"/><path d="M316 108h12" stroke="#64716d" stroke-width="3"/>
+              <path d="M315 130q9 7 18 0" stroke="#bb8371" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M270 179Q300 156 335 177" stroke="#fff2df" stroke-width="7" fill="none"/>
+              <path d="M255 179Q235 185 229 203" stroke="#f2b995" stroke-width="14" fill="none" stroke-linecap="round"/>
+              <path d="M275 47q10-16 25-8q-3-20 15-20q18 0 18 18q19-4 23 12q-21 3-40 1q-20 0-41-3Z" fill="#fff" opacity=".8"/>
+              <path d="M258 44c-10-13-28-4-22 9q5 10 22 20q17-10 22-20c6-13-12-22-22-9Z" fill="#64aa8c"/>
+            </svg>
+          </div>
+        </section>
+
+        <div class="quick-grid">
+          <button class="quick-card red" data-go="darurat">
+            <div class="quick-top"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M12 3v2M5 5l1.5 1.5M3 12h2M19 12h2M17.5 6.5 19 5"/><path d="M5 18a7 7 0 0 1 14 0v2H5zM3 21h18"/></svg></span></div>
+            <strong>Darurat</strong><p>Akses cepat saat kondisi kritis</p><span class="quick-arrow">→</span>
+          </button>
+          <button class="quick-card green" data-go="vital">
+            <div class="quick-top"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M2 12h4l3-7 5 14 3-7h5"/></svg></span></div>
+            <strong>Pantau Kesehatan</strong><p>Lihat tren tanda vital dan kondisi terkini</p><span class="quick-arrow">→</span>
+          </button>
+          <button class="quick-card orange" data-go="obat">
+            <div class="quick-top"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="m8 16 8-8a4.2 4.2 0 0 1 6 6l-8 8a4.2 4.2 0 0 1-6-6Z"/><path d="m10 14 6 6"/></svg></span></div>
+            <strong>Jadwal Obat</strong><p>Kelola pengingat obat harian</p><span class="quick-arrow">→</span>
+          </button>
+          <button class="quick-card purple" data-go="pedoman">
+            <div class="quick-top"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M3 5.5A3.5 3.5 0 0 1 6.5 2H12v19H6.5A3.5 3.5 0 0 0 3 24zM21 5.5A3.5 3.5 0 0 0 17.5 2H12v19h5.5A3.5 3.5 0 0 1 21 24z"/></svg></span></div>
+            <strong>Tanya Pedoman</strong><p>Cari informasi perawatan lansia</p><span class="quick-arrow">→</span>
+          </button>
+          <button class="quick-card blue" data-go="analitik">
+            <div class="quick-top"><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg></span></div>
+            <strong>Analitik Kesehatan</strong><p>Lihat hasil analisis dan insight</p><span class="quick-arrow">→</span>
+          </button>
+        </div>
+
+        <div class="bottom-grid">
+          <section class="panel">
+            <div class="panel-head"><div class="panel-title"><svg viewBox="0 0 24 24"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg>Ringkasan Kondisi</div><button class="period">Data Simulasi</button></div>
+            <div class="vitals">
+              <div class="vital"><span class="vital-ico">♥</span><div><strong>72 bpm</strong><small>Detak Jantung</small></div></div>
+              <div class="vital"><span class="vital-ico" style="color:#d69a3a">♨</span><div><strong>36,8°C</strong><small>Suhu Tubuh</small></div></div>
+              <div class="vital"><span class="vital-ico" style="color:#299c9c">●</span><div><strong>98%</strong><small>SpO₂</small></div></div>
+              <div class="status"><span>✓</span><strong>Kondisi Stabil</strong></div>
+            </div>
+            <div class="chart"><svg viewBox="0 0 500 65" preserveAspectRatio="none"><defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8dc7ad" stop-opacity=".28"/><stop offset="1" stop-color="#8dc7ad" stop-opacity="0"/></linearGradient></defs><path d="M5 45 Q55 43 90 42 T165 28 T235 42 T310 20 T380 43 T495 27 L495 65 L5 65Z" fill="url(#fill)"/><path d="M5 45 Q55 43 90 42 T165 28 T235 42 T310 20 T380 43 T495 27" fill="none" stroke="#55a487" stroke-width="2.5"/><g fill="#55a487" stroke="#fff" stroke-width="2"><circle cx="5" cy="45" r="4"/><circle cx="90" cy="42" r="4"/><circle cx="165" cy="28" r="4"/><circle cx="235" cy="42" r="4"/><circle cx="310" cy="20" r="4"/><circle cx="380" cy="43" r="4"/><circle cx="495" cy="27" r="4"/></g></svg></div><div style="padding:0 16px 9px;font-size:9px;color:#718681">Grafik ilustrasi · bukan rekam medis aktual</div>
+          </section>
+          <section class="panel info-panel">
+            <div class="info-copy">
+              <div class="info-title"><span class="i">i</span>Informasi Penting</div>
+              <p>Pastikan lansia minum obat sesuai jadwal dan pantau kondisi kesehatan secara rutin.</p>
+              <button class="outline-btn" data-go="pedoman">Lihat Detail　→</button>
+            </div>
+            <div class="heart-art">♥</div>
+          </section>
+        </div>
+      </section>
+
+      <section class="subpage" id="page-darurat">
+        <div class="page-head"><div><div class="eyebrow">PEMANTAUAN KONDISI</div><h1>Pemeriksaan Darurat</h1><p>Masukkan tanda vital dan keluhan untuk pemeriksaan awal berbasis aturan.</p></div></div>
+        <div class="feature-panel">
+          <h2>Pemeriksaan Tanda Vital</h2><p>Isi data berikut sesuai hasil pengukuran. Nilai contoh hanya untuk demonstrasi.</p>
+          <div class="form-grid">
+            <div class="field"><label for="sys">Sistolik (mmHg)</label><input id="sys" type="number" value="138"></div>
+            <div class="field"><label for="dia">Diastolik (mmHg)</label><input id="dia" type="number" value="86"></div>
+            <div class="field"><label for="spo">Saturasi O₂ (%)</label><input id="spo" type="number" value="98"></div>
+            <div class="field"><label for="pulse">Nadi (x/menit)</label><input id="pulse" type="number" value="72"></div>
+            <div class="field"><label for="temp">Suhu (°C)</label><input id="temp" type="number" step=".1" value="36.8"></div>
+            <div class="field"><label for="complaint">Keluhan</label><input id="complaint" type="text" placeholder="Contoh: merasa lemas"></div>
+          </div>
+          <div class="form-actions"><button class="primary-btn" id="check-vitals">Evaluasi Kondisi</button><button class="outline-btn" id="reset-vitals">Reset</button></div>
+          <div class="result" id="vital-result" role="status"></div>
+        </div>
+      </section>
+
+      <section class="subpage" id="page-vital">
+        <div class="page-head"><div><div class="eyebrow">RIWAYAT KESEHATAN</div><h1>Tren Vital</h1><p>Pantau perubahan data kesehatan dari waktu ke waktu.</p></div></div>
+        <div class="feature-panel"><h2>Ringkasan Tanda Vital</h2><p>Data di bawah adalah contoh tampilan dan bukan rekam medis.</p><div class="vitals"><div class="vital"><span class="vital-ico">♥</span><div><strong>72 bpm</strong><small>Detak Jantung</small></div></div><div class="vital"><span class="vital-ico">♨</span><div><strong>36,8°C</strong><small>Suhu Tubuh</small></div></div><div class="vital"><span class="vital-ico">●</span><div><strong>98%</strong><small>SpO₂</small></div></div></div><div class="chart" style="height:150px"><svg viewBox="0 0 600 120" preserveAspectRatio="none"><path d="M5 90 Q80 82 110 75 T210 50 T310 72 T410 35 T500 70 T595 48" fill="none" stroke="#55a487" stroke-width="3"/><g fill="#55a487"><circle cx="5" cy="90" r="5"/><circle cx="110" cy="75" r="5"/><circle cx="210" cy="50" r="5"/><circle cx="310" cy="72" r="5"/><circle cx="410" cy="35" r="5"/><circle cx="500" cy="70" r="5"/><circle cx="595" cy="48" r="5"/></g></svg></div></div>
+      </section>
+
+      <section class="subpage" id="page-obat">
+        <div class="page-head"><div><div class="eyebrow">PENGELOLAAN PENGINGAT</div><h1>Jadwal Obat</h1><p>Catat pengingat obat agar aktivitas perawatan lebih teratur.</p></div></div>
+        <div class="feature-panel"><h2>Tambah Pengingat</h2><p>Contoh antarmuka pencatatan jadwal obat.</p><div class="form-grid"><div class="field"><label>Nama obat</label><input placeholder="Masukkan nama obat"></div><div class="field"><label>Waktu minum</label><input type="time"></div><div class="field"><label>Catatan</label><input placeholder="Sesuai petunjuk tenaga kesehatan"></div></div><div class="form-actions"><button class="primary-btn" id="add-reminder">Simpan Pengingat</button></div><div class="result" id="reminder-result"></div></div>
+      </section>
+
+      <section class="subpage" id="page-tindakan">
+        <div class="page-head"><div><div class="eyebrow">DUKUNGAN KEPUTUSAN</div><h1>Rekomendasi Tindakan</h1><p>Catat kondisi dan tinjau langkah tindak lanjut yang relevan.</p></div></div>
+        <div class="feature-panel"><h2>Catatan Kondisi</h2><p>Gunakan informasi ini sebagai bahan komunikasi dengan tenaga kesehatan.</p><div class="form-grid"><div class="field"><label>Kondisi yang diamati</label><select><option>Pilih kondisi</option><option>Perubahan nafsu makan</option><option>Kesulitan tidur</option><option>Kesulitan bergerak</option><option>Keluhan nyeri</option></select></div><div class="field"><label>Sejak kapan?</label><input placeholder="Contoh: sejak kemarin"></div><div class="field"><label>Tingkat perhatian</label><select><option>Pilih tingkat</option><option>Perlu dipantau</option><option>Perlu konsultasi</option><option>Butuh bantuan segera</option></select></div></div><div class="form-actions"><button class="primary-btn" id="action-save">Simpan Catatan</button></div><div class="result" id="action-result"></div></div>
+      </section>
+
+      <section class="subpage" id="page-pedoman">
+        <div class="page-head"><div><div class="eyebrow">PUSAT INFORMASI</div><h1>Tanya Pedoman</h1><p>Temukan informasi edukasi seputar pendampingan dan perawatan lansia.</p></div></div>
+        <div class="feature-panel"><h2>Apa yang ingin kamu ketahui?</h2><p>Contoh antarmuka pencarian pengetahuan. Hubungkan ke layanan RAG/backend untuk jawaban berbasis dokumen.</p><div class="field"><label>Pertanyaan</label><textarea rows="3" placeholder="Tuliskan pertanyaan seputar perawatan lansia..."></textarea></div><div class="form-actions"><button class="primary-btn" id="ask-guide">Cari Informasi</button></div><div class="result" id="guide-result"></div></div>
+      </section>
+
+      <section class="subpage" id="page-alur">
+        <div class="page-head"><div><div class="eyebrow">SISTEM TERPADU</div><h1>Alur Lengkap SANGKARA</h1><p>Gambaran tahapan kerja asisten pendamping perawatan.</p></div></div>
+        <div class="feature-panel"><h2>Alur Pendampingan</h2><p>Alur konseptual prototipe.</p><div class="form-grid"><div class="panel" style="padding:15px"><b>01 · Input</b><p>Caregiver memasukkan data dan keluhan.</p></div><div class="panel" style="padding:15px"><b>02 · Analisis</b><p>Sistem memeriksa aturan dan konteks.</p></div><div class="panel" style="padding:15px"><b>03 · Hasil</b><p>Sistem menampilkan informasi dan tindak lanjut.</p></div></div></div>
+      </section>
+
+      <section class="subpage" id="page-ringkasan">
+        <div class="page-head"><div><div class="eyebrow">INFORMASI SISTEM</div><h1>Ringkasan Agen</h1><p>Kenali peran setiap komponen dalam SANGKARA.</p></div></div>
+        <div class="feature-panel"><h2>Komponen Pendukung</h2><div class="form-grid"><div class="panel" style="padding:14px"><b>Pemeriksaan Darurat</b><p>Memeriksa nilai vital dan kata kunci bahaya.</p></div><div class="panel" style="padding:14px"><b>Pemantauan Tren</b><p>Membantu melihat perubahan data vital.</p></div><div class="panel" style="padding:14px"><b>Pengingat</b><p>Mendukung pengelolaan jadwal perawatan.</p></div><div class="panel" style="padding:14px"><b>Rekomendasi</b><p>Menyajikan pilihan tindak lanjut.</p></div><div class="panel" style="padding:14px"><b>Pencarian Pedoman</b><p>Mengambil informasi dari sumber pengetahuan.</p></div><div class="panel" style="padding:14px"><b>Asisten Terpadu</b><p>Menggabungkan alur interaksi sistem.</p></div></div></div>
+      </section>
+
+      <section class="subpage" id="page-analitik">
+        <div class="page-head"><div><div class="eyebrow">DATA & INSIGHT</div><h1>Analitik Kesehatan</h1><p>Ringkasan visual untuk membantu memahami data perawatan.</p></div></div>
+        <div class="feature-panel"><h2>Ringkasan Analitik</h2><p>Panel ini dapat dihubungkan ke endpoint Python untuk menampilkan hasil perhitungan dari dataset.</p><div class="form-grid"><div class="panel" style="padding:15px"><small>Jumlah data contoh</small><h2>120</h2></div><div class="panel" style="padding:15px"><small>Data tervalidasi</small><h2>96</h2></div><div class="panel" style="padding:15px"><small>Perlu ditinjau</small><h2>24</h2></div></div><div class="result show">DATA SIMULASI — angka pada panel ini hanya contoh desain, bukan hasil pengolahan dataset aktual.</div></div>
+      </section>
+    </main>
+  </section>
+</div>
+<script>
+const navButtons = document.querySelectorAll('.nav-btn');
+const pages = document.querySelectorAll('.subpage');
+function openPage(name){
+  pages.forEach(p=>p.classList.toggle('active',p.id===`page-${name}`));
+  navButtons.forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  const titles={home:'Pendamping Cerdas untuk Perawatan Lansia',darurat:'Pemeriksaan Kondisi',vital:'Pemantauan Kesehatan',obat:'Pengingat Perawatan',tindakan:'Dukungan Tindakan',pedoman:'Pusat Informasi Perawatan',alur:'Alur Sistem SANGKARA',ringkasan:'Ringkasan Sistem',analitik:'Analitik Kesehatan'};
+  document.querySelector('.topbar-title').textContent=titles[name]||'SANGKARA';
+  if(window.innerWidth<=900) window.scrollTo({top:0,behavior:'smooth'});
+}
+navButtons.forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.go)));
+const today=new Date();
+document.getElementById('today').textContent=today.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('check-vitals').addEventListener('click',()=>{
+ const s=Number(document.getElementById('sys').value),d=Number(document.getElementById('dia').value),o=Number(document.getElementById('spo').value),p=Number(document.getElementById('pulse').value),t=Number(document.getElementById('temp').value);
+ const complaint=document.getElementById('complaint').value.toLowerCase();
+ const danger=['nyeri dada','sesak berat','pingsan','tidak sadar','kejang','stroke'];
+ const urgent=danger.some(w=>complaint.includes(w))||o<90||s>=180||d>=120||p<40||p>150;
+ const box=document.getElementById('vital-result');box.classList.add('show');
+ box.innerHTML=urgent
+ ? '<strong>Perlu perhatian segera.</strong><br>Hentikan penggunaan prototipe untuk mengambil keputusan medis. Hubungi layanan darurat 119 atau tenaga kesehatan. Jangan menunggu hasil analisis sistem.'
+ : '<strong>Data berhasil diperiksa oleh aturan demonstrasi.</strong><br>Tidak terdeteksi pemicu darurat pada aturan contoh ini. Ini bukan pernyataan bahwa kondisi medis pasti aman. Perhatikan gejala dan konsultasikan dengan tenaga kesehatan bila ada kekhawatiran.';
+});
+document.getElementById('reset-vitals').addEventListener('click',()=>{
+ document.getElementById('sys').value=138;document.getElementById('dia').value=86;document.getElementById('spo').value=98;document.getElementById('pulse').value=72;document.getElementById('temp').value=36.8;document.getElementById('complaint').value='';document.getElementById('vital-result').classList.remove('show');
+});
+function showResult(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.add('show')}
+document.getElementById('add-reminder').addEventListener('click',()=>showResult('reminder-result','Contoh UI: pengingat siap disimpan setelah dihubungkan ke backend.'));
+document.getElementById('action-save').addEventListener('click',()=>showResult('action-result','Catatan contoh berhasil ditambahkan pada tampilan. Hubungkan ke backend untuk penyimpanan permanen.'));
+document.getElementById('ask-guide').addEventListener('click',()=>showResult('guide-result','Hubungkan tombol ini ke endpoint RAG SANGKARA agar pertanyaan dijawab berdasarkan dokumen pedoman.'));
+</script>
+</body>
+</html>
